@@ -68,5 +68,6 @@ Because the main point of this lib is to measure the type-checking time (in orde
 
 
 ## Happenings
+🎅 2025-02-18: release 0.0.3 on JSR, removing inline ESM-incompatible inline import of node entity
 🎅 2025-02-18: release 0.0.2 on JSR
 🤖 2025-02-17: repo initialized by Bottie McBotface bot@axhxrx.com

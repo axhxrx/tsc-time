@@ -1,3 +1,4 @@
+import * as child_process from 'node:child_process';
 import { getTscCommandComponents } from './getTscCommandComponents.ts';
 import type { TscExecutionResultBare } from './TscExecutionResult.ts';
 
@@ -10,10 +11,9 @@ export const runTscWithNode = async (file: string): Promise<TscExecutionResultBa
 
   let tscExitCode = -1;
 
-  const cp = await import('child_process');
   const args = getTscCommandComponents(file, false);
 
-  const { status, stdout: rawStdout, stderr: rawStderr } = cp.spawnSync('npx', args);
+  const { status, stdout: rawStdout, stderr: rawStderr } = child_process.spawnSync('npx', args);
   tscExitCode = status ?? -1;
 
   const stdout = new TextDecoder().decode(rawStdout);
