@@ -19,7 +19,7 @@ import type { TscExecutionResult, TscExecutionResultBare } from './TscExecutionR
     elapsedMs: 1576.915708,
     stdout: "Files: <blah blah blah omitted>...",
     stderr: "",
-    tscCommand: "npx tsc --strict true --target esnext --project /Volumes/SORACOM/ucm-main/libs/ts/core/data-access-auth/tsconfig.lib.json --allowImportingTsExtensions --noEmit --extendedDiagnostics",
+    tscCommand: "npx tsc --strict true --target esnext --project /Volumes/HOGINATOR/some-path/tsconfig.lib.json --allowImportingTsExtensions --noEmit --extendedDiagnostics",
     diagnostics: {
       Files: "858",
       "Lines of Library": "39520",

@@ -9,7 +9,6 @@ Regardless of whether `tsc` succeeds or fails, `runTsc()` should return a `TscEx
 You can run this in test code, or on the command line, like so:
 
 ```ts
-import { runTsc } from 'tsc-time';
 const result = await runTsc('some-path/tsconfig.lib.json');
 console.log(result);
 ```
@@ -21,7 +20,7 @@ console.log(result);
     elapsedMs: 1576.915708,
     stdout: "Files: <blah blah blah omitted>...",
     stderr: "",
-    tscCommand: "npx tsc --strict true --target esnext --project /Volumes/SORACOM/ucm-main/libs/ts/core/data-access-auth/tsconfig.lib.json --allowImportingTsExtensions --noEmit --extendedDiagnostics",
+    tscCommand: "npx tsc --strict true --target esnext --project /Volumes/HOGINATOR/some-path/tsconfig.lib.json --allowImportingTsExtensions --noEmit --extendedDiagnostics",
     diagnostics: {
       Files: "858",
       "Lines of Library": "39520",
@@ -69,5 +68,5 @@ Because the main point of this lib is to measure the type-checking time (in orde
 
 
 ## Happenings
-🎅 2025-02-18: release 0.0.1 on JSR
+🎅 2025-02-18: release 0.0.2 on JSR
 🤖 2025-02-17: repo initialized by Bottie McBotface bot@axhxrx.com
