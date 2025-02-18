@@ -1,0 +1,37 @@
+name: CI + Publish (if needed)
+on:
+  push:
+    branches: ["*"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Test
+        run: deno test --allow-read --allow-write --allow-run
+
+      # The --allow-dirty is needed because in CI the deno.lock file may be modified
+      - name: JSR check
+        run: deno publish --dry-run --allow-dirty
+
+  # Only run if we're on main and the test job succeeded:
+  publish:
+    needs: [test]
+    runs-on: ubuntu-latest
+    if: ${{ success() && startsWith(github.ref, 'refs/heads/main') }}
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Publish package (if new version exists)"
+        run: npx jsr publish
