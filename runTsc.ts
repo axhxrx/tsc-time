@@ -1,14 +1,14 @@
-// Deno is our jam, but because we want this to run under Bun and Node also, lets use modly old `process` which they all support:
-import process from 'node:process';
-
+import { runTscWithDeno } from './_runTscWithDeno.ts';
+import { runTscWithNode } from './_runTscWithNode.ts';
 import { isDenoRuntime } from './isDenoRuntime.ts';
+import { parseDiagnostics } from './parseDiagnostics.ts';
 import { printErrorInfo } from './printErrorInfo.ts';
-import { runTscWithDeno } from './runTscWithDeno.ts';
-import { runTscWithNode } from './runTscWithNode.ts';
-import type { TscExecutionResult } from './TscExecutionResult.ts';
+import type { TscExecutionResult, TscExecutionResultBare } from './TscExecutionResult.ts';
 
 /**
- Run `tsc` on the given file, and return the result as a `TscExecutionResult`. In most cases, the result will be returned even if `tsc` fails. The `tsc` command is run as a subprocess and its output is parsed.
+ Run `tsc` on the given file, with `--allowImportingTsExtensions --noEmit --extendedDiagnostics` options, and return the result as a `TscExecutionResult`. In most cases, the result will be returned even if `tsc` fails. The `tsc` command is run as a subprocess and its output is parsed.
+
+ The `file` argument can point to a `.ts` file or a `tsconfig.json` file (any file ending with `.json` is assumed to be a tsconfig, so e.g. `./tsconfig.lib.json` is fine).
 
  This should work under Deno, Node, or Bun. Other runtimes not tested, but would only work if they can run subprocesses in a Node-compatible way.
 
@@ -55,50 +55,61 @@ import type { TscExecutionResult } from './TscExecutionResult.ts';
  */
 export async function runTsc(file: string): Promise<TscExecutionResult>
 {
-  let result: TscExecutionResult;
+  let bareResult: TscExecutionResultBare;
 
   if (isDenoRuntime())
   {
-    result = await runTscWithDeno(file);
+    bareResult = await runTscWithDeno(file);
   }
   else
   {
     // This works for Bun, too, so no need to check for Bun.
-    result = await runTscWithNode(file);
+    bareResult = await runTscWithNode(file);
   }
 
-  if (result.tscExitCode !== 0)
+  if (!bareResult.stdout)
   {
-    printErrorInfo(result);
-    process.exit(1);
+    printErrorInfo(bareResult, 'tsc produced no output');
+    throw new Error('tsc produced no output');
   }
 
-  if (!result.stdout)
-  {
-    printErrorInfo(result, 'tsc produced no output');
-    process.exit(11);
-  }
-
-  // Parse "Check time:"
-  const checkTimeLine = result.stdout
+  const checkTimeLine = bareResult.stdout
     .split('\n')
     .find((line) => line.includes('Check time'));
 
+  let checkTime = -1;
+
   if (!checkTimeLine)
   {
-    printErrorInfo(result, 'FATAL: wtf: cannot parse tsc output, probably a bug in this tool then... 🙄');
-    process.exit(21);
+    if (bareResult.tscExitCode === 0)
+    {
+      const msg = 'FATAL: wtf: cannot parse tsc output, probably a bug in this tool then... 🙄';
+      printErrorInfo(bareResult, msg);
+      throw new Error(msg);
+    }
+    // else tsc failed so leave checkTime at -1
   }
-
-  const match = checkTimeLine.match(/([\d.]+)s/);
-  if (!match)
+  else
   {
-    printErrorInfo(
-      result,
-      'FATAL: wtf: cannot parse checkTime from line: ' + checkTimeLine + '\n\nVery likely a bug in this tool... 🙄 ',
-    );
-    process.exit(31);
+    const match = checkTimeLine.match(/([\d.]+)s/);
+    const parsed = match && parseFloat(match[1]);
+
+    if (!match || typeof parsed !== 'number')
+    {
+      const msg = 'FATAL: wtf: cannot parse checkTime from line: ' + checkTimeLine
+        + '\n\nVery likely a bug in this tool... 🙄 ';
+      printErrorInfo(bareResult, msg);
+      throw new Error(msg);
+    }
+    checkTime = parsed;
   }
 
+  const diagnostics = parseDiagnostics(bareResult.stdout);
+
+  const result: TscExecutionResult = {
+    ...bareResult,
+    diagnostics,
+    checkTime,
+  };
   return result;
 }

@@ -1,7 +1,7 @@
 /**
- This structure encapsulates the output of `tsc` in a single run. Note that this structure is for the results regardless of whether `tsc` succeeded or failed. So, you may want to check `tscExitCode` to see if `tsc` succeeded (exit code 0) or failed (non-zero), depending what you want to do with the results. Although tsc emits diagnostics sometimes even when it fails, the results may be weird/incomplete in that case.
+ An intermediate structure that can be used to construct a `TscExecutionResult`. Does not contain the diagnostics or checkTime fields.
  */
-export interface TscExecutionResult
+export interface TscExecutionResultBare
 {
   /**
    The exit code of `tsc`.
@@ -29,7 +29,12 @@ export interface TscExecutionResult
    'npx tsc --strict true --target esnext /Volumes/HOHOHO/my-project/libs/ts/core/foo-auth/tsconfig.lib.json.ts --allowImportingTsExtensions --noEmit --extendedDiagnostics'
    */
   tscCommand: string;
+}
 
+/**
+ This structure encapsulates the output of `tsc` in a single run. Note that this structure is for the results regardless of whether `tsc` succeeded or failed. So, you may want to check `tscExitCode` to see if `tsc` succeeded (exit code 0) or failed (non-zero), depending what you want to do with the results. Although tsc emits diagnostics sometimes even when it fails, the results may be weird/incomplete in that case.
+ */
+export type TscExecutionResult = Omit<TscExecutionResultBare, 'diagnostics' | 'checkTime'> & {
   /**
    A best-effort attempt to parse the diagnostics, if any, from `tsc`. May not be present if `tsc` emitted no diagnostics or if an error occurred while parsing the diagnostics. Example (as of 2025-02-18 and `tsc Version 5.8.0-dev.20250218`):
 
@@ -65,6 +70,11 @@ export interface TscExecutionResult
     "Total time": "1.17s"
   }
   ```
-   */
+  */
   diagnostics: Record<string, string>;
-}
+
+  /**
+   The amount of time it took to run `tsc` and check the program, parsed from the diagnostics.
+   */
+  checkTime: number;
+};

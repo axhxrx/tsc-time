@@ -1,11 +1,10 @@
 import { getTscCommandComponents } from './getTscCommandComponents.ts';
-import { parseDiagnostics } from './parseDiagnostics.ts';
-import type { TscExecutionResult } from './TscExecutionResult.ts';
+import type { TscExecutionResultBare } from './TscExecutionResult.ts';
 
 /**
  The Deno flavor of `runTsc`.
  */
-export async function runTscWithDeno(file: string): Promise<TscExecutionResult>
+export async function runTscWithDeno(file: string): Promise<Omit<TscExecutionResultBare, 'diagnostics' | 'checkTime'>>
 {
   const start = performance.now();
 
@@ -17,15 +16,13 @@ export async function runTscWithDeno(file: string): Promise<TscExecutionResult>
   tscExitCode = commandResult.code;
   const stdout = new TextDecoder().decode(commandResult.stdout);
   const stderr = new TextDecoder().decode(commandResult.stderr);
-  const diagnostics = parseDiagnostics(stdout);
 
-  const result: TscExecutionResult = {
+  const result: TscExecutionResultBare = {
     tscExitCode,
     elapsedMs: performance.now() - start,
     stdout,
     stderr,
     tscCommand: 'npx ' + args.join(' '),
-    diagnostics,
   };
 
   return result;

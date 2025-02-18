@@ -1,6 +1,6 @@
-import type { TscExecutionResult } from './TscExecutionResult.ts';
+import type { TscExecutionResult, TscExecutionResultBare } from './TscExecutionResult.ts';
 
-export function printErrorInfo(result: TscExecutionResult, additionalInfo?: string): void
+export function printErrorInfo(result: TscExecutionResult | TscExecutionResultBare, additionalInfo?: string): void
 {
   const isTscError = result.tscExitCode !== 0;
 

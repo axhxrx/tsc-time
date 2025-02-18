@@ -2,5 +2,8 @@
   "name": "@axhxrx/tsc-time",
   "version": "0.0.1",
   "exports": "./mod.ts",
-  "license": "MIT"
+  "license": "MIT",
+  "imports": {
+    "@std/path": "jsr:@std/path@^1.0.8"
+  }
 }

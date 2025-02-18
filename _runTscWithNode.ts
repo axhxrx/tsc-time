@@ -1,11 +1,10 @@
 import { getTscCommandComponents } from './getTscCommandComponents.ts';
-import { parseDiagnostics } from './parseDiagnostics.ts';
-import type { TscExecutionResult } from './TscExecutionResult.ts';
+import type { TscExecutionResultBare } from './TscExecutionResult.ts';
 
 /**
  The Node flavor of `runTsc`. This should also work when runnig on Bun.
  */
-export const runTscWithNode = async (file: string): Promise<TscExecutionResult> =>
+export const runTscWithNode = async (file: string): Promise<TscExecutionResultBare> =>
 {
   const start = performance.now();
 
@@ -19,15 +18,13 @@ export const runTscWithNode = async (file: string): Promise<TscExecutionResult> 
 
   const stdout = new TextDecoder().decode(rawStdout);
   const stderr = new TextDecoder().decode(rawStderr);
-  const diagnostics = parseDiagnostics(stdout);
 
-  const result: TscExecutionResult = {
+  const result: TscExecutionResultBare = {
     tscExitCode,
     elapsedMs: performance.now() - start,
     stdout,
     stderr,
     tscCommand: 'npx ' + args.join(' '),
-    diagnostics,
   };
 
   return result;
