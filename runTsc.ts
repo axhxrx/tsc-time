@@ -1,14 +1,59 @@
-import { isBunRuntime } from './isBunRuntime.ts';
+// Deno is our jam, but because we want this to run under Bun and Node also, lets use modly old `process` which they all support:
+import process from 'node:process';
+
 import { isDenoRuntime } from './isDenoRuntime.ts';
-import { isNodeRuntime } from './isNodeRuntime.ts';
-import { TscExecutionResultWithDiagnostics } from './main.ts';
-import { parseDiagnostics } from './parseDiagnostics.ts';
 import { printErrorInfo } from './printErrorInfo.ts';
-import { runTscWithBun } from './runTscWithBun.ts';
 import { runTscWithDeno } from './runTscWithDeno.ts';
+import { runTscWithNode } from './runTscWithNode.ts';
 import type { TscExecutionResult } from './TscExecutionResult.ts';
 
-export async function runTsc(file: string): Promise<TscExecutionResultWithDiagnostics>
+/**
+ Run `tsc` on the given file, and return the result as a `TscExecutionResult`. In most cases, the result will be returned even if `tsc` fails. The `tsc` command is run as a subprocess and its output is parsed.
+
+ This should work under Deno, Node, or Bun. Other runtimes not tested, but would only work if they can run subprocesses in a Node-compatible way.
+
+ Example result:
+ ```ts
+{
+  tscExitCode: 0,
+  elapsedMs: 1576.915708,
+  stdout: "Files: <blah blah blah omitted>...",
+  stderr: "",
+  tscCommand: "npx tsc --strict true --target esnext --project /Volumes/SORACOM/ucm-main/libs/ts/core/data-access-auth/tsconfig.lib.json --allowImportingTsExtensions --noEmit --extendedDiagnostics",
+  diagnostics: {
+    Files: "858",
+    "Lines of Library": "39520",
+    "Lines of Definitions": "75228",
+    "Lines of TypeScript": "15172",
+    "Lines of JavaScript": "0",
+    "Lines of JSON": "0",
+    "Lines of Other": "0",
+    Identifiers: "116052",
+    Symbols: "104457",
+    Types: "20866",
+    Instantiations: "12276",
+    "Memory used": "168666K",
+    "Assignability cache size": "7573",
+    "Identity cache size": "69",
+    "Subtype cache size": "274",
+    "Strict subtype cache size": "135",
+    "I/O Read time": "0.18s",
+    "Parse time": "0.20s",
+    "ResolveModule time": "0.04s",
+    "ResolveLibrary time": "0.01s",
+    "ResolveTypeReference time": "0.00s",
+    "Program time": "0.48s",
+    "Bind time": "0.11s",
+    "Check time": "0.32s",
+    "transformTime time": "0.19s",
+    "printTime time": "0.00s",
+    "Emit time": "0.00s",
+    "Total time": "0.91s",
+  },
+}
+ ```
+ */
+export async function runTsc(file: string): Promise<TscExecutionResult>
 {
   let result: TscExecutionResult;
 
@@ -16,29 +61,22 @@ export async function runTsc(file: string): Promise<TscExecutionResultWithDiagno
   {
     result = await runTscWithDeno(file);
   }
-  else if (isBunRuntime())
-  {
-    result = await runTscWithBun(file);
-  }
-  else if (isNodeRuntime())
-  {
-    result = await runTscWithNode(file);
-  }
   else
   {
-    throw new Error('Unsupported runtime. Not Node, Deno, or Bun!');
+    // This works for Bun, too, so no need to check for Bun.
+    result = await runTscWithNode(file);
   }
 
-  if (result.code !== 0)
+  if (result.tscExitCode !== 0)
   {
-    console.error('The tsc command failed:');
-    console.log(result.stdout);
-    throw new Error(`tsc exited with code ${result.code}: ${result.stderr}`);
+    printErrorInfo(result);
+    process.exit(1);
   }
 
   if (!result.stdout)
   {
-    throw new Error('tsc produced no output');
+    printErrorInfo(result, 'tsc produced no output');
+    process.exit(11);
   }
 
   // Parse "Check time:"
@@ -49,28 +87,18 @@ export async function runTsc(file: string): Promise<TscExecutionResultWithDiagno
   if (!checkTimeLine)
   {
     printErrorInfo(result, 'FATAL: wtf: cannot parse tsc output, probably a bug in this tool then... 🙄');
-    Deno.exit(1);
+    process.exit(21);
   }
 
   const match = checkTimeLine.match(/([\d.]+)s/);
   if (!match)
   {
-    printErrorInfo(result,
-      'FATAL: wtf: cannot parse checkTime from line: ' + checkTimeLine + '\n\nVery likely a bug in this tool... 🙄 ');
-    Deno.exit(1);
+    printErrorInfo(
+      result,
+      'FATAL: wtf: cannot parse checkTime from line: ' + checkTimeLine + '\n\nVery likely a bug in this tool... 🙄 ',
+    );
+    process.exit(31);
   }
 
-  const checkTime = parseFloat(match[1]);
-
-  result = {
-    ...result,
-    checkTime,
-  };
-
-  const diagnostics = parseDiagnostics(result.stdout);
-
-  return {
-    ...result,
-    diagnostics,
-  };
+  return result;
 }

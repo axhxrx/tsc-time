@@ -1,10 +1,10 @@
 /**
- Parse the tsc output to get the diagnostics as JSON.
+ Parse the `tsc` output to get the diagnostics as JSON.
  */
-export function parseDiagnostics(output: string): Record<string, unknown>
+export function parseDiagnostics(output: string): Record<string, string>
 {
   const lines = output.split('\n');
-  const diagnostics: Record<string, unknown> = {};
+  const diagnostics: Record<string, string> = {};
   let key: string | null = null;
 
   for (const line of lines)

@@ -1,3 +1,4 @@
-export function isDenoRuntime(): boolean {
+export function isDenoRuntime(): boolean
+{
   return typeof Deno !== 'undefined' && typeof Deno?.Command === 'function';
 }

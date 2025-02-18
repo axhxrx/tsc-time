@@ -1,29 +1,33 @@
-import { getTscCommandComponents } from './geTscCommandComponents.ts';
-import { TscExecutionResult } from './TscExecutionResult.ts';
+import { getTscCommandComponents } from './getTscCommandComponents.ts';
+import { parseDiagnostics } from './parseDiagnostics.ts';
+import type { TscExecutionResult } from './TscExecutionResult.ts';
 
+/**
+ The Node flavor of `runTsc`. This should also work when runnig on Bun.
+ */
 export const runTscWithNode = async (file: string): Promise<TscExecutionResult> =>
 {
   const start = performance.now();
 
-  let code = -1;
-  let rawStdout = new Uint8Array();
-  let rawStderr = new Uint8Array();
+  let tscExitCode = -1;
 
   const cp = await import('child_process');
   const args = getTscCommandComponents(file, false);
 
-  const { status, stdout, stderr } = cp.spawnSync('npx', args);
-  code = status ?? -1;
-  rawStdout = stdout;
-  rawStderr = stderr;
+  const { status, stdout: rawStdout, stderr: rawStderr } = cp.spawnSync('npx', args);
+  tscExitCode = status ?? -1;
+
+  const stdout = new TextDecoder().decode(rawStdout);
+  const stderr = new TextDecoder().decode(rawStderr);
+  const diagnostics = parseDiagnostics(stdout);
 
   const result: TscExecutionResult = {
-    code,
-    checkTime: -1,
+    tscExitCode,
     elapsedMs: performance.now() - start,
-    stdout: new TextDecoder().decode(rawStdout),
-    stderr: new TextDecoder().decode(rawStderr),
+    stdout,
+    stderr,
     tscCommand: 'npx ' + args.join(' '),
+    diagnostics,
   };
 
   return result;

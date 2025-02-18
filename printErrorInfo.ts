@@ -2,11 +2,11 @@ import type { TscExecutionResult } from './TscExecutionResult.ts';
 
 export function printErrorInfo(result: TscExecutionResult, additionalInfo?: string): void
 {
-  const isTscError = result.code !== 0;
+  const isTscError = result.tscExitCode !== 0;
 
   if (isTscError)
   {
-    console.error(`tsc exited with exit code ${result.code}: ${result.stderr}`);
+    console.error(`tsc exited with exit code ${result.tscExitCode}: ${result.stderr}`);
   }
   else
   {
