@@ -1,3 +1,5 @@
+export * from './runTsc.ts';
+
 import { main } from './main.ts';
 
 if (import.meta.main)

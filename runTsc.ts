@@ -1,8 +1,8 @@
-import { runTscWithDeno } from './_runTscWithDeno.ts';
-import { runTscWithNode } from './_runTscWithNode.ts';
 import { isDenoRuntime } from './isDenoRuntime.ts';
 import { parseDiagnostics } from './parseDiagnostics.ts';
 import { printErrorInfo } from './printErrorInfo.ts';
+import { runTscWithDeno } from './runTscWithDeno.ts';
+import { runTscWithNode } from './runTscWithNode.ts';
 import type { TscExecutionResult, TscExecutionResultBare } from './TscExecutionResult.ts';
 
 /**
@@ -14,44 +14,46 @@ import type { TscExecutionResult, TscExecutionResultBare } from './TscExecutionR
 
  Example result:
  ```ts
-{
-  tscExitCode: 0,
-  elapsedMs: 1576.915708,
-  stdout: "Files: <blah blah blah omitted>...",
-  stderr: "",
-  tscCommand: "npx tsc --strict true --target esnext --project /Volumes/SORACOM/ucm-main/libs/ts/core/data-access-auth/tsconfig.lib.json --allowImportingTsExtensions --noEmit --extendedDiagnostics",
-  diagnostics: {
-    Files: "858",
-    "Lines of Library": "39520",
-    "Lines of Definitions": "75228",
-    "Lines of TypeScript": "15172",
-    "Lines of JavaScript": "0",
-    "Lines of JSON": "0",
-    "Lines of Other": "0",
-    Identifiers: "116052",
-    Symbols: "104457",
-    Types: "20866",
-    Instantiations: "12276",
-    "Memory used": "168666K",
-    "Assignability cache size": "7573",
-    "Identity cache size": "69",
-    "Subtype cache size": "274",
-    "Strict subtype cache size": "135",
-    "I/O Read time": "0.18s",
-    "Parse time": "0.20s",
-    "ResolveModule time": "0.04s",
-    "ResolveLibrary time": "0.01s",
-    "ResolveTypeReference time": "0.00s",
-    "Program time": "0.48s",
-    "Bind time": "0.11s",
-    "Check time": "0.32s",
-    "transformTime time": "0.19s",
-    "printTime time": "0.00s",
-    "Emit time": "0.00s",
-    "Total time": "0.91s",
-  },
-}
- ```
+  {
+    tscExitCode: 0,
+    elapsedMs: 1576.915708,
+    stdout: "Files: <blah blah blah omitted>...",
+    stderr: "",
+    tscCommand: "npx tsc --strict true --target esnext --project /Volumes/SORACOM/ucm-main/libs/ts/core/data-access-auth/tsconfig.lib.json --allowImportingTsExtensions --noEmit --extendedDiagnostics",
+    diagnostics: {
+      Files: "858",
+      "Lines of Library": "39520",
+      "Lines of Definitions": "75228",
+      "Lines of TypeScript": "15172",
+      "Lines of JavaScript": "0",
+      "Lines of JSON": "0",
+      "Lines of Other": "0",
+      Identifiers: "116052",
+      Symbols: "104457",
+      Types: "20866",
+      Instantiations: "12276",
+      "Memory used": "168666K",
+      "Assignability cache size": "7573",
+      "Identity cache size": "69",
+      "Subtype cache size": "274",
+      "Strict subtype cache size": "135",
+      "I/O Read time": "0.18s",
+      "Parse time": "0.20s",
+      "ResolveModule time": "0.04s",
+      "ResolveLibrary time": "0.01s",
+      "ResolveTypeReference time": "0.00s",
+      "Program time": "0.48s",
+      "Bind time": "0.11s",
+      "Check time": "0.32s",
+      "transformTime time": "0.19s",
+      "printTime time": "0.00s",
+      "Emit time": "0.00s",
+      "Total time": "0.91s",
+    },
+    checkTime: 0.32,
+  }
+```
+  @throws in rare cases like `tsc` output changes and we can no longer parse the output in the future, but normally should not happen
  */
 export async function runTsc(file: string): Promise<TscExecutionResult>
 {
