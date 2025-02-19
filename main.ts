@@ -11,5 +11,6 @@ export async function main()
     throw new Error('Usage: node runTsc.ts <file>');
   }
   const result = await runTsc(file);
-  console.log(result);
+  const jsonOutput = JSON.stringify(result, null, 2);
+  console.log(jsonOutput);
 }
