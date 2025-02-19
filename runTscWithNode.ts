@@ -3,9 +3,13 @@ import { getTscCommandComponents } from './getTscCommandComponents.ts';
 import type { TscExecutionResultBare } from './TscExecutionResult.ts';
 
 /**
- The Node flavor of `runTsc`. This should also work when runnig on Bun.
+ NOTE: This does NOT work in Node or Bun if you are inside a project that isn't using ESM. Like if you have some crusty old monorepo with some Angular apps in it and a bunch of CommonJS dependencies.
+
+ For that scenario, use `runTscWithNodeSubprocessThatRunsDeno()`.
+
+ Otherwise, this is the Node flavor of `runTsc`. This should also work when running on Bun.
  */
-export const runTscWithNode = async (file: string): Promise<TscExecutionResultBare> =>
+export const runTscWithNode = (file: string): TscExecutionResultBare =>
 {
   const start = performance.now();
 
