@@ -40,6 +40,3 @@ export function runTscWithExtendedDiagnostics(
 
   return JSON.parse(stdout);
 }
-
-const x = runTscWithExtendedDiagnostics('/Volumes/SORACOM/ucm-satc2/libs/ts/core/data-access-auth/tsconfig.lib.json');
-console.log({ x });
